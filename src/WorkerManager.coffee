@@ -24,13 +24,18 @@ class WorkerManager
     Job.pop (err, job) ->
       if job?
         console.log "got unprocessed #{job._id}"
-        self.takeJob()
+        self.processor.process(
+          job,
+          (-> job.setStatus('retrying', self.errorHandler)),
+          (-> job.setStatus('completed',self.takeJob))
+        )
       else 
         console.log "job queue empty"
         setTimeout self.takeJob, 1000
 
-  errorHandler:->
+  errorHandler:=>
     console.log "something went wrong :o"
+    @takeJob()
     
 workerManager = new WorkerManager({
   mongoURL:"mongodb://localhost/media_engine"

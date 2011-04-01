@@ -9,8 +9,10 @@ class UppercaseProcessor extends AbstractProcessor
   
   process:( job, errorHandler, nextHandler ) ->
     console.log job._id.toString().toUpperCase()
-    nextHandler()
-  
+    if new Date().getTime() % 2
+      nextHandler()
+    else 
+      errorHandler()
   
   
   

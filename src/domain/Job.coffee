@@ -13,13 +13,19 @@ schema = new mongoose.Schema {
     
   status:
     type: String,
-    enum: ["unprocessed", "processing", "retrying", "completed"]
+    enum: ["unprocessed", "processing", "retrying", "completed", "failed"]
     default: "unprocessed"
     index:true
   
   retryCount:
     type:Number
     default:0
+}
+
+schema.method {
+  setStatus :(status, func)->
+    this.status = status;
+    this.save(func)
 }
   
 schema.static {
