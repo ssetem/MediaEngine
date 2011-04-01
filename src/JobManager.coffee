@@ -24,5 +24,5 @@ jobManager = new JobManager({
   mongoURL:"mongodb://localhost/media_engine"
 })
 
-for i in [1..10]
+for i in [1..50]
   jobManager.addJob()

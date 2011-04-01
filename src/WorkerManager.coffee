@@ -1,7 +1,6 @@
 require.paths.unshift(__dirname+'/node_modules')
 
 mongoose = require 'mongoose'
-redis    = require 'redis'
 util    = require 'util'
 UppercaseProcessor = require './processors/UppercaseProcessor'
 
@@ -24,7 +23,7 @@ class WorkerManager
     
     Job.pop (err, job) ->
       if job?
-        console.log "got unprocessed "+util.inspect(arguments)
+        console.log "got unprocessed #{job._id}"
         self.takeJob()
       else 
         console.log "job queue empty"
