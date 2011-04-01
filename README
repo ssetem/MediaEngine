@@ -1,1 +1,5 @@
 MediaEngine
+
+to get coffeescript to watch correctly enter following in terminal
+
+coffeescript -w -c -o src/ lib/
