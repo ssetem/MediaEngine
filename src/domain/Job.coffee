@@ -6,6 +6,10 @@ schema = new mongoose.Schema {
     type: Date
     default: Date.now
   
+  lastModified:
+    type: Date
+    default: Date.now
+  
   priority:
     type: Number
     default: 5
@@ -17,24 +21,48 @@ schema = new mongoose.Schema {
     default: "unprocessed"
     index:true
   
+  #accepts any object
+  data:{}
+  
   retryCount:
     type:Number
     default:0
 }
 
 schema.method {
-  setStatus :(status, func)->
-    this.status = status;
+  
+  complete :(func)->
+    this.status = "completed"
     this.save(func)
+  
+  retry:(func) ->
+    if this.retryCount < 3
+      this.status = "retrying"
+      this.retryCount++
+    else
+      this.status = "failed"
+    this.save func
+  
+  fail: (func) ->
+    this.status = "failed"
+    this.save func
 }
   
 schema.static {
   
-  pop:(func)->
+    
+  processNext:(func)->
     self = @
-    filter = {status:"unprocessed"}
+    filter = 
+      "$or" : [
+        { status:"unprocessed"}, 
+        { status:"retrying" }
+      ]
     sort = [["priority", 1]]
-    update =  {"$set":{status: "processing"}}
+    update =
+      "$set":
+        status: "processing"
+        lastModified: Date.now
     
     this.collection.findAndModify(filter,sort, update,(err, job) ->
       if job?._id?

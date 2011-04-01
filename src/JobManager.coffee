@@ -1,28 +1,26 @@
-require.paths.unshift(__dirname+'/node_modules')
-
-mongoose = require 'mongoose'
-utils    = require 'util'
+AbstractJobManager = require './AbstractJobManager'
 require './domain/Job'
 
 
-
-class JobManager
+class JobManager extends AbstractJobManager
   
   constructor:(@options)->
-    @initMongo()
-  
-  initMongo:->
-    @db = mongoose.connect @options.mongoURL
-    global.Job = mongoose.model 'Job'
-
-  addJob:->
+    super @options
+    
+  addJob:(data)->
     j = new Job()
-    j.save (err)=>
+    j.data = data
+    j.save (err) =>
       console.log 'adding new job:' + j._id
     
 jobManager = new JobManager({
   mongoURL:"mongodb://localhost/media_engine"
 })
 
-for i in [1..50]
-  jobManager.addJob()
+setInterval( ->
+  jobManager.addJob({
+    x:120
+    y:600
+  })
+,200
+)
