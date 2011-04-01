@@ -1,0 +1,9 @@
+{
+  "name":"MediaEngine",
+  "version":"0.0.1",
+  "dependencies":{
+	  "mongoose":"1.1.2",   	
+	  "nodeunit":"0.5.1",
+	  "redis" : "0.5.9"
+	}
+}
