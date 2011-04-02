@@ -34,20 +34,28 @@ schema = new mongoose.Schema {
 schema.method {
   
   complete :(func)->
+    self = @
     this.status = "completed"
-    this.save(func)
+    new CompletedJob(this.toJSON()).save ->
+      self.remove func
   
   retry:(@errorMessage,func) ->
+    self = @
+    console.log "retry"
     if this.retryCount < 3
       this.status = "retrying"
       this.retryCount++
+      this.save func
     else
-      this.status = "failed"
-    this.save func
+      this.fail.apply(this, arguments)
+
   
   fail: (@errorMessage,func) ->
+    console.log "failed"
+    self = @
     this.status = "failed"
-    this.save func
+    new FailedJob(this.toJSON()).save ->
+      self.remove func
 }
   
 schema.static {
@@ -74,5 +82,12 @@ schema.static {
     )
 
 }  
-  
-mongoose.model 'Job', schema
+
+aliases = 
+  "current_job" : "Job"
+  "completed_job" : "CompletedJob"
+  "failed_job" : "FailedJob"
+
+for own k,v of aliases
+  mongoose.model k, schema
+  global[v] = mongoose.model k

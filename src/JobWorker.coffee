@@ -11,12 +11,15 @@ class JobWorker extends AbstractJobManager
   constructor:(@options)->
     super(@options)
     @processor = new ImageMagickProcessor()
-
+    #@processor = new UppercaseProcessor()
+    
+    
   takeJob:=>
     self = @
     
     Job.processNext (err, job) ->
       if job?
+        console.log "processing job with priority:#{job.priority}"
         self.processor.process(
           job,
           self.createErrorCallback(job),

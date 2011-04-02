@@ -12,7 +12,7 @@ class AbstractJobManager
   
   initMongo:->
     @db = mongoose.connect @options.mongoURL
-    global.Job = mongoose.model 'Job'
+    global.Job = mongoose.model 'current_job'
 
 
 module.exports = AbstractJobManager

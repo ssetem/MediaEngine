@@ -12,11 +12,12 @@ class ImageMagickProcessor extends AbstractProcessor
       params = {  srcPath: d.input,  dstPath: d.output,  width:   d.width  	}
       
       im.resize params, (err, stdout, stderr) ->
-    	  if err
-    	    errorHandler({errorMessage:err.toString()})
-    	  else
-    	    console.log stdout
-    	    nextHandler()
+        if err?
+          errorHandler({errorMessage:err.toString()})
+        else
+          nextHandler()
+    else
+      errorHandler({errorMessage:"no data provided for image conversion"})
     	
   
   
