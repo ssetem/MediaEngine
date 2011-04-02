@@ -45,9 +45,5 @@ class JobWorker extends AbstractJobManager
       console.log "job: #{job._id} completed"
       job.complete(self.takeJob)
 
-    
-jobWorker = new JobWorker({
-  mongoURL:"mongodb://localhost/media_engine"
-})
+module.exports = JobWorker
 
-jobWorker.takeJob()
