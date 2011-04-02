@@ -1,6 +1,7 @@
 AbstractJobManager = require './AbstractJobManager'
 UppercaseProcessor = require './processors/UppercaseProcessor'
 DataPrinter = require './processors/DataPrinter'
+ImageMagickProcessor = require './processors/ImageMagickProcessor'
 
 require './domain/Job'
 
@@ -9,7 +10,7 @@ class JobWorker extends AbstractJobManager
   
   constructor:(@options)->
     super(@options)
-    @processor = new DataPrinter()
+    @processor = new ImageMagickProcessor()
 
   takeJob:=>
     self = @
@@ -29,8 +30,10 @@ class JobWorker extends AbstractJobManager
     self = @
     return (errorOptions)->
       errorMethod = if errorOptions?.retry is false then "fail" else "retry"
-      job[errorMethod] ->
-        console.log "job: #{job._id} errored, status:#{job.status}, retryCount:#{job.retryCount}"
+    
+      job[errorMethod] errorOptions?.errorMessage, ->
+        console.log "job: #{job._id} errored, status:#{job.status}, retryCount:#{job.retryCount} "
+        console.log job.errorMessage if job.errorMessage
         self.takeJob()
   
   createCompletedCallback:(job)->

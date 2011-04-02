@@ -21,6 +21,8 @@ schema = new mongoose.Schema {
     default: "unprocessed"
     index:true
   
+  errorMessage:String
+  
   #accepts any object
   data:{}
   
@@ -35,7 +37,7 @@ schema.method {
     this.status = "completed"
     this.save(func)
   
-  retry:(func) ->
+  retry:(@errorMessage,func) ->
     if this.retryCount < 3
       this.status = "retrying"
       this.retryCount++
@@ -43,7 +45,7 @@ schema.method {
       this.status = "failed"
     this.save func
   
-  fail: (func) ->
+  fail: (@errorMessage,func) ->
     this.status = "failed"
     this.save func
 }

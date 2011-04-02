@@ -1,4 +1,6 @@
 AbstractJobManager = require './AbstractJobManager'
+fs = require 'fs'
+util = require 'util'
 require './domain/Job'
 
 
@@ -17,10 +19,16 @@ jobManager = new JobManager({
   mongoURL:"mongodb://localhost/media_engine"
 })
 
-setInterval( ->
+path = "/Users/ash/Documents/MEE/MediaEngine/sample"
+
+originalPath = "/Users/ash/joe-test-images"
+
+files = fs.readdirSync originalPath
+
+for f in files
   jobManager.addJob({
-    x:120
-    y:600
+    width:50
+    input:originalPath + "/" + f
+    output:path + "/thumbs/"+ f
   })
-,200
-)
+
