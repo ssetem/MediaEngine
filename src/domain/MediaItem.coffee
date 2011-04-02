@@ -1,4 +1,7 @@
 mongoose = require 'mongoose'
+path = require 'path'
+FileUtils = require('../FileUtils')
+Step = require 'step'
 
 schema = new mongoose.Schema {
   
@@ -10,8 +13,53 @@ schema = new mongoose.Schema {
     type: Date
     default: Date.now
   
-  fileName:String
+  extension:String
+  
+  filename:String
 
 }
 
+schema.method {
+  
+  getFilePath:(foldername="original")->
+     "#{MediaItem.basePath}/#{this._id}/#{foldername}/#{this.filename}"
+  
+}
+
+schema.static {
+  
+  
+  saveFile:(filePath, callback) ->
+    
+    filename = path.basename(filePath)
+    extension = path.extname(filePath)
+    mediaItem = new MediaItem({
+      filename:filename 
+      extension:extension    
+    })
+    
+    Step(
+      # Save the media item
+      ()-> mediaItem.save(this)
+      ,
+      # copy the file to destination directory
+      (err)->
+        callback err if err
+        FileUtils.copyFile filePath, mediaItem.getFilePath("original"), this
+      ,  
+      # if there is an error rollback
+      (err)->
+        if err
+          mediaItem.remove ->
+            callback err
+        else
+          callback(null, mediaItem)
+    )
+
+  
+}
+
+
+
 mongoose.model 'MediaItem', schema
+module.exports = MediaItem = mongoose.model 'MediaItem'
