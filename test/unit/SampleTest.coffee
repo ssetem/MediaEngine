@@ -6,8 +6,8 @@ testcases =
 	 callback()
 	 
 	"test instance boolean":(test)->
-    test.expect(1)
-    test.equals(@somevar, true)
-    test.done()
+	    test.expect(1)
+	    test.equals(@somevar, true)
+	    test.done()
 
 module.exports = testCase(testcases)
