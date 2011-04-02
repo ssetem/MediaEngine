@@ -41,7 +41,6 @@ schema.method {
   
   retry:(@errorMessage,func) ->
     self = @
-    console.log "retry"
     if this.retryCount < 3
       this.status = "retrying"
       this.retryCount++
