@@ -60,7 +60,7 @@ schema.method {
 schema.static {
 	
   find:(id, func) ->
-	this.collection.findById(id, func);
+	  this.collection.findById(id, func);
   
     
   processNext:(func)->

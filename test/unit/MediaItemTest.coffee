@@ -14,15 +14,13 @@ testcases =
     mongoose.connect "mongodb://localhost/test_media_engine"
     callback()
 	
-	tearDown:(callback) ->
-    FileUtils.rmdirSyncRecursive(@outputDir)	  
+  tearDown:(callback) ->
+    FileUtils.rmdirSyncRecursive(@outputDir)   
     MediaItem.collection.remove ->
-	    mongoose.disconnect()
-	    callback()	  
+      callback()    	  
 	  
 	"test file exists":(test)->
     test.expect 1
-    console.log @loremFile
     path.exists @loremFile, (exists)->
       test.ok(exists)
       test.done()
