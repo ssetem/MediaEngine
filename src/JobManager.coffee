@@ -12,7 +12,7 @@ class JobManager extends AbstractJobManager
     j.data = data
     j.save (err) ->
       console.log j._id
-
+    j
 
 module.exports = JobManager
 

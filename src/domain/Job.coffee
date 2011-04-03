@@ -93,3 +93,5 @@ aliases =
 for own k,v of aliases
   mongoose.model k, schema
   global[v] = mongoose.model k
+
+module.exports = mongoose.model "current_job"
