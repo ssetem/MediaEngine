@@ -17,7 +17,6 @@ testcases =
 	tearDown:(callback) ->
     FileUtils.rmdirSyncRecursive(@outputDir)	  
     MediaItem.collection.remove ->
-	    mongoose.disconnect()
 	    callback()	  
 	  
 	"test file exists":(test)->
