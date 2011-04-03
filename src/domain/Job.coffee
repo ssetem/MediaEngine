@@ -1,38 +1,13 @@
 mongoose = require 'mongoose'
 
 
-class Par
-  constructor:(@subjobs)->
-
-class SimpleJob
-  constructor:(options)->
-    for own k, v of options
-      @[k] = v
-
-TEXT_ROUTE = new Par([
-  new SimpleJob({
-    processor:"capitlise"
-  }),
-  new SimpleJob({
-    processor:"truncate", size:50
-    subjob: new SimpleJob({
-      processor:"capitise"
-    })
-  }),
-  new SimpleJob({
-    processor:"replace"
-    regex:/(love)/
-    replacement:"lovely"
-  })
-])
-
 ObjectId = mongoose.Schema.ObjectId
 
 schema = new mongoose.Schema {
   
   parentJobId:ObjectId
   
-  dependantId:ObjectId
+  nextJobId:ObjectId
   
   creationDate: 
     type: Date
@@ -49,14 +24,24 @@ schema = new mongoose.Schema {
     
   status:
     type: String,
-    enum: ["unprocessed", "processing", "retrying", "completed", "failed", "dependant", "completed_and_waiting_on_dependants", "waiting_on_dependents"]
-    default: "unprocessed"
+    enum: ["ready_for_processing", "processing", "retrying", "completed", "failed", "dependant", "completed_and_waiting_on_dependants", "waiting_on_dependents"]
+    default: "ready_for_processing"
     index:true
+  
+  childCount:Number
+  
+  jobIndex:Number
   
   type:
     type:String
     enum: ["parallel", "sequential", "job"]
-    default : "job"
+    default: "job"
+
+
+  parentJobType:
+    type:String
+    enum: ["parallel", "sequential", "job"]
+    default : null
     
   processor:
     type:String
