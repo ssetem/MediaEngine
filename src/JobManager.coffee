@@ -15,8 +15,4 @@ class JobManager extends AbstractJobManager
        fn(err) if err
        fn(j)
 
-		
-      
-
-
 module.exports = JobManager
