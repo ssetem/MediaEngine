@@ -17,10 +17,14 @@ schema = new mongoose.Schema {
     
   status:
     type: String,
-    enum: ["unprocessed", "processing", "retrying", "completed", "failed"]
+    enum: ["unprocessed", "processing", "retrying", "completed", "failed", "dependant"]
     default: "unprocessed"
     index:true
   
+  type:
+    type:String
+    enum: ["parallel", "sequential", "job"]
+    default : "job"
   errorMessage:String
   
   #accepts any object
