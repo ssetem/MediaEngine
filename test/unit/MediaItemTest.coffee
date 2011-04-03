@@ -17,7 +17,8 @@ testcases =
   tearDown:(callback) ->
     FileUtils.rmdirSyncRecursive(@outputDir)   
     MediaItem.collection.remove ->
-      callback()    	  
+	    callback()	  
+
 	  
 	"test file exists":(test)->
     test.expect 1
