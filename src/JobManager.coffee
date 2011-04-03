@@ -14,8 +14,5 @@ class JobManager extends AbstractJobManager
       console.log j._id
 
 
-
-	
-    
 module.exports = JobManager
 
