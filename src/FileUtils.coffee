@@ -3,6 +3,7 @@ fs = require "fs"
 path = require "path"
 {mkdirp} = require 'mkdirp'
 Step = require 'step'
+mime = require 'mime'
 
 FileUtils = 
   copyFile : (source, dest, callback)->
@@ -30,12 +31,17 @@ FileUtils =
 
         util.pump read, write, callback
     
-    )  
-  
+    )
+    
+  writeFile:(filePath, contents, fn)->
+    fs.writeFile filePath, contents, fn
+    
   rmdirSyncRecursive:(p)->
     path.exists p ,(exists)->
       if exists then FileUtils._rmdirSyncRecursive p
-      
+
+  identifyFileMimeType:(fileLocation, fn) -> fn mime.lookup(fileLocation) 
+		    
   _rmdirSyncRecursive : (path)->
     files = fs.readdirSync(path)
     currDir = path

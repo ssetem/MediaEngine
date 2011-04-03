@@ -1,7 +1,10 @@
 AbstractJobManager = require './AbstractJobManager'
+
 UppercaseProcessor = require './processors/UppercaseProcessor'
-DataPrinter = require './processors/DataPrinter'
 ImageMagickProcessor = require './processors/ImageMagickProcessor'
+MetadataImageProcessor = require './processors/MetadataImageProcessor'
+ZipProcessor = require './processors/ZipProcessor'
+VideoProcessor = require './processors/VideoProcessor'
 
 require './domain/Job'
 
@@ -10,9 +13,9 @@ class JobWorker extends AbstractJobManager
   
   constructor:(@options)->
     super(@options)
-    @processor = new ImageMagickProcessor()
+    #@processor = new ImageMagickProcessor()
     #@processor = new UppercaseProcessor()
-    
+    @processor = new VideoProcessor()
     
   takeJob:=>
     self = @

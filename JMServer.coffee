@@ -12,12 +12,15 @@ originalPath = "/Users/joe/tes-timages"
 
 files = fs.readdirSync originalPath
 
+fn = (job) -> console.log job._id 
+
 files.forEach (f) ->
 	
   jobManager.addJob({
     width:500
     input:originalPath + "/" + f
-    output:path + "/thumbs/"+ f
-  })
+    output:path + "/thumbs"
+    name: f
+  }, fn)
 
 	
