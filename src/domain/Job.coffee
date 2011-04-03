@@ -1,6 +1,38 @@
 mongoose = require 'mongoose'
 
+
+class Par
+  constructor:(@subjobs)->
+
+class SimpleJob
+  constructor:(options)->
+    for own k, v of options
+      @[k] = v
+
+TEXT_ROUTE = new Par([
+  new SimpleJob({
+    processor:"capitlise"
+  }),
+  new SimpleJob({
+    processor:"truncate", size:50
+    subjob: new SimpleJob({
+      processor:"capitise"
+    })
+  }),
+  new SimpleJob({
+    processor:"replace"
+    regex:/(love)/
+    replacement:"lovely"
+  })
+])
+
+ObjectId = mongoose.Schema.ObjectId
+
 schema = new mongoose.Schema {
+  
+  parentJobId:ObjectId
+  
+  dependantId:ObjectId
   
   creationDate: 
     type: Date
@@ -17,7 +49,7 @@ schema = new mongoose.Schema {
     
   status:
     type: String,
-    enum: ["unprocessed", "processing", "retrying", "completed", "failed", "dependant"]
+    enum: ["unprocessed", "processing", "retrying", "completed", "failed", "dependant", "completed_and_waiting_on_dependants", "waiting_on_dependents"]
     default: "unprocessed"
     index:true
   
@@ -25,6 +57,10 @@ schema = new mongoose.Schema {
     type:String
     enum: ["parallel", "sequential", "job"]
     default : "job"
+    
+  processor:
+    type:String
+    
   errorMessage:String
   
   #accepts any object
@@ -40,8 +76,9 @@ schema.method {
   complete :(func)->
     self = @
     this.status = "completed"
-    new CompletedJob(this.toJSON()).save ->
-      self.remove func
+    # new CompletedJob(this.toJSON()).save ->
+    #   self.remove func
+    this.save func
   
   retry:(@errorMessage,func) ->
     self = @
@@ -57,8 +94,9 @@ schema.method {
     console.log "failed"
     self = @
     this.status = "failed"
-    new FailedJob(this.toJSON()).save ->
-      self.remove func
+    this.save fun
+    # new FailedJob(this.toJSON()).save ->
+    #   self.remove func
 }
   
 schema.static {
