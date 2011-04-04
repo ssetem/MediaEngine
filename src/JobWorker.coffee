@@ -15,9 +15,9 @@ class JobWorker extends AbstractJobManager
   constructor:(@options)->
     super(@options)
     #@processor = new ImageMagickProcessor()
-    #@processor = new UppercaseProcessor()
-    @processor = new VideoProcessor()
-    @jobFlowManager = new JobFlowManager
+    @processor = new UppercaseProcessor()
+    #@processor = new VideoProcessor()
+    @jobFlowManager = new JobFlowManager()
     
   takeJob:(err)=>
     self = @

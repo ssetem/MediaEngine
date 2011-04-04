@@ -13,6 +13,10 @@ schema = new mongoose.Schema {
   
   childJobId:ObjectId
   
+  name:String
+  
+  processor:String
+  
   creationDate: 
     type: Date
     default: Date.now
@@ -66,9 +70,6 @@ schema.method {
 }
   
 schema.static {
-	
-  find:(id, func) ->
-	  this.collection.findById(id, func);
 
 
 }  

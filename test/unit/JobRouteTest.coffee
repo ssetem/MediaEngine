@@ -8,26 +8,29 @@ MediaItem = require '../../lib/domain/MediaItem'
 FileUtils = require '../../lib/FileUtils'
 Job = require '../../lib/domain/Job'
 
-{Par, Seq, SimpleJob,JobRouteManager} = require '../../lib/domain/JobRoute'
+{Par, Seq, SimpleJob,JobRouteManager} = require '../../lib/JobRouteManager'
 
 
 TEXT_ROUTE = Par([
   SimpleJob({
+    name:"capitalise_name"
     processor:"capitalise"
   }),
   SimpleJob({
-    processor:"truncate", size:50
+    name:"truncate_name", processor:"truncate", size:50
     subjob: new SimpleJob({
       processor:"capitalise"
     })
   }),
   SimpleJob({
+    name:"replace_name"
     processor:"replace"
     regex:/(love)/
     replacement:"lovely"
   }),
   Seq([
     SimpleJob({
+      name:"extract_exif_name"
       processor:"extract_exif"      
     }),
     SimpleJob({
@@ -68,8 +71,16 @@ testcases =
     extract_iptc = jobs[7]
     solr_index = jobs[8]
 
+    #test names
+    test.equals(capitalise.name, "capitalise_name")
+    test.equals(truncate.name, "truncate_name")
+    test.equals(truncate_capitalise.name, "capitalise")
+    test.equals(replace_job.name, "replace_name")
     
-    
+    test.equals(extract_exif.name, "extract_exif_name")
+    test.equals(extract_iptc.name, "extract_iptc")
+    test.equals(solr_index.name, "solr_index")
+        
     #test par
     test.equals(parJob.type, "parallel")  
     test.equals(parJob.parentJobType, "none")
@@ -80,14 +91,14 @@ testcases =
     test.equals(seq_job.childCount, 3)
     
     #test processors
-    test.equals(capitalise.data.processor, "capitalise")
-    test.equals(truncate.data.processor, "truncate")
-    test.equals(truncate_capitalise.data.processor, "capitalise")
-    test.equals(replace_job.data.processor, "replace")
+    test.equals(capitalise.processor, "capitalise")
+    test.equals(truncate.processor, "truncate")
+    test.equals(truncate_capitalise.processor, "capitalise")
+    test.equals(replace_job.processor, "replace")
     
-    test.equals(extract_exif.data.processor, "extract_exif")
-    test.equals(extract_iptc.data.processor, "extract_iptc")
-    test.equals(solr_index.data.processor, "solr_index")  
+    test.equals(extract_exif.processor, "extract_exif")
+    test.equals(extract_iptc.processor, "extract_iptc")
+    test.equals(solr_index.processor, "solr_index")  
     
     #test indexes
     test.equals(extract_exif.index, 0)
@@ -131,18 +142,7 @@ testcases =
     jobRouteManager.saveJobs ->
       test.equals(jobRouteManager.archivedJobs.length, job_length)
       test.done()
-   
-  "test route worker":(test)->
-    jobRouteManager = new JobRouteManager(TEXT_ROUTE)
-    jobRouteManager.saveJobs()
-    
-    test1 = ->
-      Job.processNext (err, job) ->
-        console.log(job)
-        test.done()
-    
-    setTimeout test1, 0
-    
+
      
     
     

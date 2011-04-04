@@ -39,8 +39,8 @@ class JobFlowManager
                   this
                 )
               (err)->
-                if err then #Util.log err; func err
-                #Util.log "job:#{job._id} started #{job.type} child jobs"
+                if err then Util.log err; func err
+                Util.log "job:#{job._id} started #{job.type} child jobs"
                 func()
             )
 
@@ -75,11 +75,11 @@ class JobFlowManager
     if !cancelRetry and job.retryCount < 1000
       job.status = "retrying"
       job.retryCount++
-      #Util.log "job: #{job._id} errored, attempting retry:#{job.retryCount}"
+      Util.log "job: #{job._id} errored, attempting retry:#{job.retryCount}"
       job.save next
     else
       job.status ="failed"
-      #Util.log "job #{job._id} failed"
+      Util.log "job #{job._id} failed"
       job.errorMessage = job.errorMessage || ""
       job.save next
 
@@ -94,9 +94,9 @@ class JobFlowManager
           job.status = "completed"
           job.save this
         (err)->
-          if err then #Util.log err; next err
+          if err then Util.log err; next err
           Job.findById(job.nextJobId, (err, nextJob)->
-            if err then #Util.log err; next err
+            if err then Util.log err; next err
             nextJob.status = "ready_for_processing"
             nextJob.save next()
           )
@@ -111,19 +111,19 @@ class JobFlowManager
           job.save this
           
         (err)->
-          if err then #Util.log err; next err
+          if err then Util.log err; next err
           Job.findById(job.childJobId, (err, childJob) ->
-            if err then #Util.log err; next err
+            if err then Util.log err; next err
             if childJob?
               childJob.status = "ready_for_processing"
               childJob.save this
             else
-              #Util.log("somethign went wrong")
+              Util.log("somethign went wrong")
               next()
           )
           
         (err)->
-          ##Util.log "job: #{job._id} completed, waiting on child jobs"                    
+          Util.log "job: #{job._id} completed, waiting on child jobs"                    
           next(err)
           
       )
@@ -132,13 +132,13 @@ class JobFlowManager
       Step(
         ()->job.save this
         (err)->
-          if err then #Util.log err
+          if err then Util.log err
           if job.parentJobId?
             #Util.log "job: #{job._id} completed, notifying parents"              
             next()
             self.notifyParents(job)
           else
-            #Util.log "job: #{job._id} completed"              
+            Util.log "job: #{job._id} completed"              
             next()
       )
   
@@ -146,15 +146,15 @@ class JobFlowManager
     self = this
     
     Job.findById(job.parentJobId, (err, parentJob)->
-      if err then #Util.log err
+      if err then Util.log err
       setStatus = ->
         parentJob.status = "completed"
         parentJob.save( (err)->
           if parentJob.parentJobId?
-            ##Util.log "job: #{job._id} completed, since children completed, notifying grandparents"            
+            #Util.log "job: #{job._id} completed, since children completed, notifying grandparents"            
             self.notifyParents(parentJob)
           else
-            ##Util.log "job: #{job._id} completed, since children completed"
+            #Util.log "job: #{job._id} completed, since children completed"
         )
       
       
