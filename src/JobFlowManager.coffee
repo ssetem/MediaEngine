@@ -72,7 +72,7 @@ class JobFlowManager
     
     cancelRetry = errorOptions?.retry is false
     
-    if !cancelRetry and job.retryCount < 1000
+    if !cancelRetry and job.retryCount < 3
       job.status = "retrying"
       job.retryCount++
       Util.log "job: #{job._id} errored, attempting retry:#{job.retryCount}"
