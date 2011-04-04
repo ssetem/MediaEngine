@@ -10,7 +10,7 @@ Step = require 'step'
 
 
 
-TEXT_ROUTE = Par([
+TEXT_ROUTE = Seq([
   SimpleJob({
     name:"capitalise_name"
     processor:"capitalise"
@@ -44,6 +44,7 @@ TEXT_ROUTE = Par([
 testcases = 
   
   setUp:(callback) ->
+    
     self = this
     mongoose.connect "mongodb://localhost/test_media_engine"
     @jobRouteManager = new JobRouteManager(TEXT_ROUTE)
@@ -57,8 +58,7 @@ testcases =
       
     self.processNext = (callback)->
       self.jobFlowManager.processNext (err, job)->
-        self.refreshJobs ()->
-          callback(err, job)
+        callback(err, job)
     
     Job.collection.remove ->
       self.jobRouteManager.saveJobs ->
@@ -69,30 +69,42 @@ testcases =
   tearDown:(callback) ->
     #Job.collection.remove ->
     callback()
+
   
   "test dummy":(test)->
-    # self = this
-    # # test.equals(self.parJob?.status, "ready_for_processing")
-    # self.processNext ()->
-    #   # console.log self.truncate?.status
-    #   # test.equals(self.parJob?.status, "waiting_on_dependants")
-    #   # test.equals(self.capitalise?.status, "ready_for_processing")
-    #   # test.equals(self.truncate?.status, "ready_for_processing")
-    #   # test.equals(self.replace_job?.status, "ready_for_processing")
-    #   
-    #   self.processNext (err, job2)->
-    #     
-    #     # test.equals( job2.status, "processing")
-    #     self.jobFlowManager.jobSuccessful job2, ->
-    #       
-    #       self.processNext (err, job3)->
-    #         console.log job3
-    #         self.jobFlowManager.jobSuccessful job3, ->
-    #         # 
-    #         #              self.processNext (err, job)->
-    #         #                console.log arguments
-    #         #                test.done()
+    self = this
+    
+    testIds = [self.capitalise._id, self.truncate._id, self.truncate_capitalise._id, self.replace_job._id, self.extract_exif._id, self.extract_iptc._id, self.solr_index._id]
+    ids = []
+    
+    #test.equals(self.parJob?.status, "ready_for_processing")
+    
+    finish = ->
+      test.done()
+    
+    
+    run = ->
       
+      self.processNext (err, job)->
+               
+        if job?
+          ids.push(job._id)
+          self.jobFlowManager.jobSuccessful( job, ->
+            run()
+          )
+        else
+          if ids.length < 7
+            setTimeout(run, 10)
+              
+          else
+            setTimeout(finish, 10)
+            console.log ids
+            test.deepEqual(ids, testIds)
+            test.done()
+
+        
+    run()
+    
 
 
 
