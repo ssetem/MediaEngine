@@ -7,6 +7,8 @@
 	  "imagemagick":"0.1.2",
 	  "mkdirp":"0.0.2",
 	  "step":"0.0.4",
-	  "underscore":"1.1.5"
+	  "underscore":"1.1.5",
+	  "mime": "1.2.1",
+	  "ffmpeg-node": "0.0.1"
 	}
 }

@@ -9,7 +9,7 @@ class ImageMagickProcessor extends AbstractProcessor
   process:( job, errorHandler, nextHandler ) ->
     if job?.data?
       d = job.data
-      params = {  srcPath: d.input,  dstPath: d.output,  width:   d.width  	}
+      params = {  srcPath: d.input,  dstPath: d.output+d.file,  width:   d.width  	}
       
       im.resize params, (err, stdout, stderr) ->
         if err?

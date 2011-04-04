@@ -1,16 +1,31 @@
 
 AbstractProcessor = require './AbstractProcessor'
-util = require 'util'
+FileUtils = require('../FileUtils');
+im = require 'imagemagick'
 
-# Sample processor to simply uppcase and log info on a job
 class ImageMetadataProcessor extends AbstractProcessor
   
   process:( job, errorHandler, nextHandler ) ->
     if job?.data?
-      console.log job.data
-      nextHandler()
+      d = job.data
+      
+      im.readMetadata d.input, (err, metadata) ->
+        if err?
+          errorHandler({errorMessage:err.toString()})
+        else
+          getMetadata = (metadata, type) ->
+            if metadata[type]?
+              json = JSON.stringify metadata[type]
+              fileName = "#{d.output}#{d.name}-#{type}.json" 
+              
+              FileUtils.writeFile fileName, json, (err) ->
+               if (err) then errorHandler(err)
+               nextHandler()
+          
+          getMetadata metadata, type for type in ["exif", "iptc"]
+                     
     else
-      errorHandler({retry:true})
+      errorHandler({errorMessage:"no data provided for image metadata"})
   
   
 module.exports = ImageMetadataProcessor

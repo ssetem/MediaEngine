@@ -51,4 +51,15 @@ TEXT_ROUTE = Par([
   ])
 ])
 
-jobManager.addJobRoute(TEXT_ROUTE)
+fn = (job) -> console.log job._id 
+
+files.forEach (f) ->
+	
+  jobManager.addJob({
+    width:500
+    input:originalPath + "/" + f
+    output:path + "/thumbs"
+    name: f
+  }, fn)
+
+#jobManager.addJobRoute(TEXT_ROUTE)
