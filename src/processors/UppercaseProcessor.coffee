@@ -6,12 +6,12 @@ class UppercaseProcessor extends AbstractProcessor
   
   process:( job, errorHandler, nextHandler ) ->
     setTimeout( ->
-      console.log job._id.toString().toUpperCase()
-      if new Date().getTime() % 3
-        nextHandler()
+      if new Date().getTime() % 2 or true
+       console.log job._id+" "+job.data.processor        
+       nextHandler()
       else 
-        errorHandler({retry:false})
-    ,1)
+       errorHandler({retry:true})
+    ,Math.round(Math.random()*0))
   
   
   

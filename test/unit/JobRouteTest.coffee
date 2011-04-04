@@ -42,18 +42,20 @@ TEXT_ROUTE = Par([
 testcases = 
 	setUp: (callback)->
     mongoose.connect "mongodb://localhost/test_media_engine"
+    Job.collection.remove()
     callback()
 	
   tearDown:(callback) ->
-	  callback()	  
+    Job.collection.remove()
+    callback()	  
 
   "test new media item":(test)->
     test.ok(true)
-    console.log TEXT_ROUTE
     jobRouteManager = new JobRouteManager(TEXT_ROUTE)
     jobs =  jobRouteManager.jobs
     # console.log jobs
 
+    
     
     #cache variables
     parJob = jobs[0]    
@@ -70,7 +72,7 @@ testcases =
     
     #test par
     test.equals(parJob.type, "parallel")  
-    test.equals(parJob.parentJobType, null)
+    test.equals(parJob.parentJobType, "none")
     test.equals(parJob.childCount, 4)
     
     #test seq
@@ -104,7 +106,7 @@ testcases =
       test.ok(!o.subjobs?)
       
     #test next job id
-    test.equals(truncate.nextJobId, truncate_capitalise._id)
+    test.equals(truncate.childJobId, truncate_capitalise._id)
     test.equals(extract_exif.nextJobId, extract_iptc._id)
     test.equals(extract_iptc.nextJobId, solr_index._id)
     test.equals(solr_index.nextJobId, null)
@@ -112,16 +114,16 @@ testcases =
     
     
     
-    #test parentId
-    test.ok(capitalise.parentId == parJob._id)
-    test.ok(truncate.parentId == parJob._id)
-    test.ok(truncate_capitalise.parentId == truncate._id)
-    test.ok(replace_job.parentId == parJob._id)
+    #test parentJobId
+    test.ok(capitalise.parentJobId == parJob._id)
+    test.ok(truncate.parentJobId == parJob._id)
+    test.ok(truncate_capitalise.parentJobId == truncate._id)
+    test.ok(replace_job.parentJobId == parJob._id)
 
-    test.ok(capitalise.parentId == parJob._id)
-    test.ok(truncate.parentId == parJob._id)
-    test.ok(truncate_capitalise.parentId == truncate._id)
-    test.ok(replace_job.parentId == parJob._id)
+    test.ok(capitalise.parentJobId == parJob._id)
+    test.ok(truncate.parentJobId == parJob._id)
+    test.ok(truncate_capitalise.parentJobId == truncate._id)
+    test.ok(replace_job.parentJobId == parJob._id)
     
     job_length = jobs.length
     
@@ -130,7 +132,17 @@ testcases =
       test.equals(jobRouteManager.archivedJobs.length, job_length)
       test.done()
    
-     
+  "test route worker":(test)->
+    jobRouteManager = new JobRouteManager(TEXT_ROUTE)
+    jobRouteManager.saveJobs()
+    
+    test1 = ->
+      Job.processNext (err, job) ->
+        console.log(job)
+        test.done()
+    
+    setTimeout test1, 0
+    
      
     
     

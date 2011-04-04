@@ -33,7 +33,7 @@ class JobRouteManager
       job = new Job()
       @jobs.push job      
       if parent?
-        job.parentId = parent._id
+        job.parentJobId = parent._id
         job.status ="dependant"
         job.parentJobType = parent.type
       else
@@ -48,7 +48,7 @@ class JobRouteManager
         for j in route.subjobs
           this.processRoute(job, j)
           
-      if route instanceof Seq
+      else if route instanceof Seq
         job.childCount = route.subjobs.length
         job.type = "sequential"
         
@@ -63,16 +63,16 @@ class JobRouteManager
           if index2+1 < subjobs.length
             j2.nextJobId = subjobs[index2+1]._id
                         
-      if route instanceof SimpleJob
+      else if route instanceof SimpleJob
         job.type="job"
         if route.subjob?
-          nextJob = this.processRoute(job, route.subjob)
-          if nextJob?
-            job.nextJobId = nextJob._id
+          childJob = this.processRoute(job, route.subjob)
+          if childJob?
+            job.childJobId = childJob._id
             
       job
       
-  saveJobs:(@callback)->
+  saveJobs:(@callback = (->))->
     this._saveJobs()
   
   _saveJobs:()->

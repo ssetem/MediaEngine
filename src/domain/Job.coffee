@@ -1,17 +1,22 @@
 mongoose = require 'mongoose'
-
+Step = require 'step'
 
 ObjectId = mongoose.Schema.ObjectId
 
 schema = new mongoose.Schema {
   
-  parentJobId:ObjectId
+  parentJobId:
+    type:ObjectId
+    index:true
   
   nextJobId:ObjectId
+  
+  childJobId:ObjectId
   
   creationDate: 
     type: Date
     default: Date.now
+    index:true
   
   lastModified:
     type: Date
@@ -24,13 +29,13 @@ schema = new mongoose.Schema {
     
   status:
     type: String,
-    enum: ["ready_for_processing", "processing", "retrying", "completed", "failed", "dependant", "completed_and_waiting_on_dependants", "waiting_on_dependents"]
+    enum: ["ready_for_processing", "processing", "retrying", "completed", "failed", "dependant", "completed_and_waiting_on_dependants", "waiting_on_dependants"]
     default: "ready_for_processing"
     index:true
   
   childCount:Number
   
-  jobIndex:Number
+  index:Number
   
   type:
     type:String
@@ -40,8 +45,8 @@ schema = new mongoose.Schema {
 
   parentJobType:
     type:String
-    enum: ["parallel", "sequential", "job"]
-    default : null
+    enum: ["parallel", "sequential", "job", "none"]
+    default : "none"
     
   processor:
     type:String
@@ -58,57 +63,13 @@ schema = new mongoose.Schema {
 
 schema.method {
   
-  complete :(func)->
-    self = @
-    this.status = "completed"
-    # new CompletedJob(this.toJSON()).save ->
-    #   self.remove func
-    this.save func
-  
-  retry:(@errorMessage,func) ->
-    self = @
-    if this.retryCount < 3
-      this.status = "retrying"
-      this.retryCount++
-      this.save func
-    else
-      this.fail.apply(this, arguments)
-
-  
-  fail: (@errorMessage,func) ->
-    console.log "failed"
-    self = @
-    this.status = "failed"
-    this.save fun
-    # new FailedJob(this.toJSON()).save ->
-    #   self.remove func
 }
   
 schema.static {
 	
   find:(id, func) ->
 	  this.collection.findById(id, func);
-  
-    
-  processNext:(func)->
-    self = @
-    filter = 
-      "$or" : [
-        { status:"unprocessed"}, 
-        { status:"retrying" }
-      ]
-    sort = [["priority", 1]]
-    update =
-      "$set":
-        status: "processing"
-        lastModified: Date.now
-    
-    this.collection.findAndModify(filter,sort, update,(err, job) ->
-      if job?._id?
-        self.findById(job._id, func)    
-      else
-        func(null,null)
-    )
+
 
 }  
 
