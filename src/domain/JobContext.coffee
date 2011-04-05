@@ -2,10 +2,14 @@ async = require 'async'
 Job = require "./Job"
 MediaItem = require "./MediaItem"
 
+String::getExtension = ()->
+  this.replace /^.+(\.\w+)$/, "$1"
+
 class JobContext
   
   
   constructor:(@job, @previousJob, @mediaItem)->
+    #console.log arguments
     @folderPath = @mediaItem.getFolderPath()
   
     
@@ -17,7 +21,11 @@ class JobContext
     }
     
     async.parallel loadObjects, (err, results)->
-      if err then callback err
+
+      if err 
+        console.log err
+        callback err
+      
       {previousJob, mediaItem} = results      
       jobContext = new JobContext(job, previousJob, mediaItem)
       callback( null, jobContext )
@@ -30,6 +38,9 @@ class JobContext
     else
       []
   
+  getRelativeCurrentFolder:()->
+    "#{@mediaItem.getRelativeFolderPath()}#{@job.jobPath}"
+    
   getCurrentFolder:()->
     "#{@folderPath}#{@job.jobPath}"
   

@@ -16,11 +16,31 @@ schema = new mongoose.Schema {
   extension:String
   
   filename:String
+  
+  generatedFiles:{}
 
 }
 
 schema.method {
   
+  setGenerateOutputFiles:(jobPath, files, next)->
+    update = {}
+    update["generatedFiles."+jobPath] = {
+      status :"completed"
+      paths:files
+    }
+    this.collection.update(
+      {_id:this._id},
+      { "$set":update }
+      {}
+      next
+    )
+    
+  getRelativeFilePath:()->
+    "#{@getRelativeFolderPath()}/original/output#{@extension}"  
+    
+  getRelativeFolderPath:()->
+    "/#{this._id}"
   
   getFilePath:()->
      "#{@getFolderPath()}/original/output#{@extension}"
@@ -42,18 +62,28 @@ schema.static {
       extension:extension    
     })
     
+    mediaItem.generatedFiles = {
+      original : {
+        status:"completed"
+        paths:[mediaItem.getRelativeFilePath()]
+      }
+    }
+    
     Step(
       # Save the media item
       ()-> mediaItem.save(this)
       ,
       # copy the file to destination directory
       (err)->
-        callback err if err
+        if err 
+          console.log err
+          callback err
         FileUtils.copyFile filePath, mediaItem.getFilePath("original"), this
       ,  
       # if there is an error rollback
       (err)->
         if err
+          console.log err
           mediaItem.remove ->
             callback err
         else

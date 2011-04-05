@@ -1,7 +1,7 @@
 Job = require './domain/Job'
 _ = require('underscore')._
 Step = require 'step'
-#util = require '#util'
+util = require 'util'
 async = require 'async'
 class JobFlowManager
   
@@ -76,11 +76,13 @@ class JobFlowManager
     if !cancelRetry and job.retryCount < 3
       job.status = "retrying"
       job.retryCount++
-      #util.log "job: #{job._id} errored, attempting retry:#{job.retryCount}"
+      util.log "job: #{job._id} #{job.jobPath} errored, attempting retry:#{job.retryCount}"
+      util.log errorOptions.errorMessage || ""      
       job.save next
     else
       job.status ="failed"
-      #util.log "job #{job._id} failed"
+      util.log "job #{job._id} #{job.jobPath} failed"
+      util.log errorOptions.errorMessage || ""
       job.errorMessage = job.errorMessage || ""
       job.save next
 
@@ -136,11 +138,11 @@ class JobFlowManager
         (err)->
           if err then #util.log err
           if job.parentJobId?
-            ##util.log "job: #{job._id} completed, notifying parents"  
+            util.log "job: #{job._id} completed #{job.jobPath}" if job.type is "job"
             next()            
             self.notifyParents(job)
           else
-            #util.log "job: #{job._id} completed"              
+            util.log "job: #{job._id} completed #{job.jobPath}" if job.type is "job"             
             next()
       )
   

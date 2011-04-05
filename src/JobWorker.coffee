@@ -28,23 +28,45 @@ class JobWorker extends AbstractJobManager
     
     @jobFlowManager.processNext (err, job) ->
       if err then console.log err
-      if job?
+      if job?  
+        try 
+          processorClass = require "./processors/new/#{job.processor}Processor"          
+        catch e
+          console.log e.stack
+        
+        missingProcessor = ()->
+          return self.jobFlowManager.jobErrored({retry:false,errorMessage:"could not find processor:#{job.processor}Processor"}, job, self.takeJob)
+        
+        unless processorClass?
+          missingProcessor()
+          
         JobContext.create job, (err, jobContext)->
           if err then console.log err
-          processor = new self.processorClass(jobContext)
           
+          processor = new processorClass(jobContext)
+          
+          unless processor?
+            missingProcessor()
+            
           successful = ->
             fs.readdir jobContext.getCurrentFolder(), (err, files)->
               files = files || []
               job.outputFiles = _.map files, (f) -> jobContext.getCurrentFolder() + f
-              self.jobFlowManager.jobSuccessful job, self.takeJob
-      
-          processor.process(
-            job
-            (errorOptions) -> self.jobFlowManager.jobErrored(errorOptions, job, self.takeJob)
-            () -> setTimeout(successful,10)
+              relativeFilePaths = _.map files, (f) -> jobContext.getRelativeCurrentFolder() + f
+              jobContext.mediaItem.setGenerateOutputFiles job.jobPath, relativeFilePaths, (err)->
+                console.log err if err
+                self.jobFlowManager.jobSuccessful job, self.takeJob
+          try 
+            processor.process(
+              job
+              (errorOptions) -> self.jobFlowManager.jobErrored(errorOptions, job, self.takeJob)
+              () -> setTimeout(successful,10)
 
-          )
+            )
+          catch e
+            missingProcessor()
+            console.log e.stack
+          
              
       else
         #console.log "job queue empty"

@@ -1,9 +1,8 @@
 util = require "util"
 fs = require "fs"
 path = require "path"
-{mkdirp} = require 'mkdirp'
 Step = require 'step'
-mime = require 'mime'
+_ = require("underscore")._
 
 FileUtils = 
   copyFile : (source, dest, callback)->
@@ -14,34 +13,62 @@ FileUtils =
       
       #check source directory exists
       ()-> path.exists source, this
-      ,
+      
       #handle non existence
       #make destination directories
       (exists) ->
           unless exists is true
             callback(new Error("Source directory does not exist"))
           else
-            mkdirp dirname, 0755,this
-      ,
+            FileUtils.mkdirp dirname, 0755,this
+      
       #copy the file
-      (error) ->
-        if error then callback error
+      (err) ->
+        if err 
+          console.log  err
+          callback err
+
         read = fs.createReadStream source
         write = fs.createWriteStream dest
 
         util.pump read, write, callback
     
-    )
-    
-  writeFile:(filePath, contents, fn)->
-    fs.writeFile filePath, contents, fn
-    
+    )  
+  
+  mkdirp:  (p, mode, next )->
+      next ?= ()->
+      if p.charAt(0) isnt '/' 
+        next "Relative path: #{p}"
+
+      ps = path.normalize(p).split('/');
+      path.exists p, (exists)->
+        if exists 
+           return next null
+        
+        errNotOk = (err)->
+          err? and err.code isnt "EEXIST"
+
+        FileUtils.mkdirp ps.slice(0,-1).join("/"), mode, (err)->
+          if errNotOk(err) 
+             next err
+          else
+            fs.mkdir p, mode, (err)->
+              if errNotOk(err)
+                next(err)
+              else
+                next(null)
+          
+  readdirFullpath:( folder, next)->
+    fs.readdir folder,(err, files)->
+      if err then next err
+      filesFull = _.map files, (f) -> folder + "/" + f
+      next null, filesFull
+
+  
   rmdirSyncRecursive:(p)->
     path.exists p ,(exists)->
       if exists then FileUtils._rmdirSyncRecursive p
-
-  identifyFileMimeType:(fileLocation, fn) -> fn mime.lookup(fileLocation) 
-		    
+      
   _rmdirSyncRecursive : (path)->
     files = fs.readdirSync(path)
     currDir = path
