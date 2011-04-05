@@ -3,7 +3,7 @@ JobManager = require './lib/JobManager.js'
 FileUtils = require './lib/FileUtils.js'
 MediaItem = require './lib/domain/MediaItem.js'
 AbstractProcessor = require "./lib/processors/AbstractProcessor.js"
-
+async = require 'async'
 {Par, Seq, SimpleJob,JobRouteManager} = require "./lib/JobRouteManager"
 
 jobManager = new JobManager({
@@ -21,22 +21,14 @@ for i in [1..2]
 # 
 TEXT_ROUTE = SimpleJob
   name:"Job1"
-  subjob:Par([
+  subjob:Seq([
     SimpleJob({ 
       processor:"TextProcessor", name:"text1"
-      subjob:SimpleJob(name:"hi", subjob:Par(sampleJobs))
+      #subjob:SimpleJob(name:"hi", subjob:Par(sampleJobs))
     })
     SimpleJob({ 
       processor:"TextProcessor", name:"text2"
       subjob:Seq(sampleJobs)
-    })
-    SimpleJob({
-      processor:"TextProcessor", name:"text3"
-      subjob:Par(sampleJobs)    
-    })
-    SimpleJob({
-      processor:"TextProcessor", name:"text4"
-      subjob:Seq(sampleJobs)    
     })
   ])
 
@@ -69,7 +61,7 @@ class TextProcessor extends AbstractProcessor
     console.log "PREVIOUS", someId+(@jobContext.previousJob?.jobPath || "/original/")
     # 
     # console.log()
-    
+    #nextHandler()
     #setTimeout(nextHandler, 0)
     # #nextHandler()
     #console.log "CURRENT_FOLDER", @jobContext.getCurrentFolder()
@@ -77,16 +69,20 @@ class TextProcessor extends AbstractProcessor
     # # console.log 
     # # console.log "/" + job.mediaItemId+job.jobPath
     # # 
-    p = MediaItem.basePath + "/#{job.mediaItemId}"
-     
-    source = "#{p}/original/output.txt"
-    dest = "#{p}/#{job.jobPath}/output.txt"
-    FileUtils.copyFile(source, dest, ->
-     nextHandler()
+    
+    inputFiles = @jobContext.getInputFiles()
+    console.log inputFiles.length
+    jobContext = @jobContext
+    async.forEach(
+      inputFiles
+      (f, next)->  
+        FileUtils.copyFile(f, jobContext.getCurrentFolder()+"/output#{+new Date}.txt",next)
+      nextHandler
     )
+
     
 
-for i in [1..2]
+for i in [1]
   jw = new JobWorker({
     mongoURL:"mongodb://localhost/media_engine"
   })

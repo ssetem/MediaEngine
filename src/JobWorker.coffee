@@ -7,8 +7,10 @@ MetadataImageProcessor = require './processors/MetadataImageProcessor'
 ZipProcessor = require './processors/ZipProcessor'
 VideoProcessor = require './processors/VideoProcessor'
 async = require 'async'
+_ = require("underscore")._
 require './domain/Job'
 JobContext = require "./domain/JobContext"
+fs = require 'fs'
 
 class JobWorker extends AbstractJobManager
   
@@ -30,10 +32,18 @@ class JobWorker extends AbstractJobManager
         JobContext.create job, (err, jobContext)->
           if err then console.log err
           processor = new self.processorClass(jobContext)
+          
+          successful = ->
+            fs.readdir jobContext.getCurrentFolder(), (err, files)->
+              files = files || []
+              job.outputFiles = _.map files, (f) -> jobContext.getCurrentFolder() + f
+              self.jobFlowManager.jobSuccessful job, self.takeJob
+      
           processor.process(
             job
             (errorOptions) -> self.jobFlowManager.jobErrored(errorOptions, job, self.takeJob)
-            () ->             self.jobFlowManager.jobSuccessful job, self.takeJob
+            () -> setTimeout(successful,10)
+
           )
              
       else

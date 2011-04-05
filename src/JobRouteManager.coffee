@@ -72,8 +72,8 @@ class JobRouteManager
         for j2, index2 in subjobs
           if index2+1 < subjobs.length
             j2.nextJobId = subjobs[index2+1]._id
-          if index2>0
-            j2.previousJobId = subjobs[index2-1]._id
+          # if index2>0
+          #   j2.previousJobId = subjobs[index2-1]._id
                         
       else if route instanceof SimpleJob
         job.type="job"

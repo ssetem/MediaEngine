@@ -22,8 +22,8 @@ schema = new mongoose.Schema {
 schema.method {
   
   
-  getFilePath:(foldername="original")->
-     "/#{@getFolderPath()}/#{foldername}/output.txt"
+  getFilePath:()->
+     "#{@getFolderPath()}/original/output#{@extension}"
   
   getFolderPath:->
     "#{MediaItem.basePath}/#{this._id}"
@@ -35,7 +35,7 @@ schema.static {
   
   saveFile:(filePath, callback) ->
     
-    filename = path.basename(filePath)
+    filename = path.basename(filePath).replace(/\.\w+$/,"")
     extension = path.extname(filePath)
     mediaItem = new MediaItem({
       filename:filename 

@@ -66,6 +66,7 @@ schema = new mongoose.Schema {
     
   errorMessage:String
   
+  outputFiles:[String]
   #accepts any object
   data:{}
   

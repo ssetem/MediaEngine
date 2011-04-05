@@ -2,7 +2,6 @@ async = require 'async'
 Job = require "./Job"
 MediaItem = require "./MediaItem"
 
-
 class JobContext
   
   
@@ -23,6 +22,13 @@ class JobContext
       jobContext = new JobContext(job, previousJob, mediaItem)
       callback( null, jobContext )
     
+  getInputFiles:()->
+    if @previousJob?
+      return @previousJob.outputFiles.concat()
+    else if @mediaItem?
+      return [@mediaItem.getFilePath()]
+    else
+      []
   
   getCurrentFolder:()->
     "#{@folderPath}#{@job.jobPath}"
