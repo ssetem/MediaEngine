@@ -2,64 +2,54 @@ JobManager = require './lib/JobManager.js'
 fs = require 'fs'
 util = require 'util'
 {Par, Seq, SimpleJob,JobRouteManager} = require './lib/JobRouteManager'
+FileUtils = require './lib/FileUtils'
+Job = require './lib/domain/job'
+MediaItem = require './lib/domain/MediaItem'
+
+async = require 'async'
 
 jobManager = new JobManager({
   mongoURL:"mongodb://localhost/media_engine"
 })
 
-# path = "/Users/joe/samples"
-# 
-# originalPath = "/Users/joe/tes-timages"
-# 
-# files = fs.readdirSync originalPath
-# 
-# files.forEach (f) ->
-#   
-#   jobManager.addJob({
-#     width:500
-#     input:originalPath + "/" + f
-#     output:path + "/thumbs/"+ f
-#   })
 
-
-
-TEXT_ROUTE = Par([
+IMAGE_ROUTE = Par([
   SimpleJob({
-    processor:"capitalise"
-  }),
+    processor:"Image", name:"thumb", width:100
+  })
   SimpleJob({
-    processor:"truncate", size:50
-    subjob: new SimpleJob({
-      processor:"capitalise"
-    })
-  }),
+    processor:"Image", name:"preview", width:300#, customArgs:["-gaussian-blur", "20"]
+    subjob:SimpleJob({processor:"Image", name:"rotate", width:200, customArgs:["-rotate","180"]})
+  })
   SimpleJob({
-    processor:"replace"
-    regex:/(love)/
-    replacement:"lovely"
-  }),
-  Seq([
-    SimpleJob({
-      processor:"extract_exif"      
-    }),
-    SimpleJob({
-      processor:"extract_iptc"      
-    }),
-    SimpleJob({
-      processor:"solr_index"      
-    })
-  ])
+    processor:"ImageMetadata", name:"metadata"
+  })
 ])
 
-fn = (job) -> console.log job._id 
 
-files.forEach (f) ->
-	
-  jobManager.addJob({
-    width:500
-    input:originalPath + "/" + f
-    output:path + "/thumbs"
-    name: f
-  }, fn)
-
-#jobManager.addJobRoute(TEXT_ROUTE)
+MediaItem.collection.remove ->
+  Job.collection.remove ->
+  
+    MediaItem.basePath= __dirname + "/filestore"
+  
+    #imagefolder = __dirname + "/test/resources/images"
+    imagefolder =  "/Users/ash/joe-test-images"
+  
+  
+    queue = async.queue(
+      (f, next) ->
+        MediaItem.saveFile f, (err, mediaItem)->
+          if err then console.dir err.stack
+          jobManager.addJobRoute(IMAGE_ROUTE, mediaItem)
+          next()
+      #number of workers
+      10
+    )
+    
+    empty = ()->
+  
+    FileUtils.readdirFullpath imagefolder, (err, files)->
+      if err then console.log err
+    
+      for f in files
+        queue.push(f, empty)
