@@ -1,7 +1,8 @@
+MediaItem = require '../domain/MediaItem'
+
 class AbstractProcessor
   
-  #default implementation
-  process:(job, errorHandler, nextHandler)->
-    errorHandler({errorMessage:"unimplemented processor"})
+  constructor:(@jobContext)->
+  
 
 module.exports = AbstractProcessor

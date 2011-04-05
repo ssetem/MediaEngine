@@ -1,7 +1,7 @@
 
 AbstractJobManager = require './AbstractJobManager'
 require './domain/Job'
-{Par, Seq, SimpleJob,JobRouteManager} = require './domain/JobRoute'
+{Par, Seq, SimpleJob,JobRouteManager} = require './JobRouteManager'
 
 
 
@@ -18,7 +18,7 @@ class JobManager extends AbstractJobManager
       fn(j)
     j
   
-  addJobRoute:(route)->
-    new JobRouteManager(route).saveJobs()
+  addJobRoute:(route, mediaItem)->
+    new JobRouteManager(route, mediaItem).saveJobs()
 
 module.exports = JobManager

@@ -5,6 +5,13 @@ ObjectId = mongoose.Schema.ObjectId
 
 schema = new mongoose.Schema {
   
+  previousJobId:
+    type:ObjectId
+  
+  mediaItemId:
+    type:ObjectId
+    index:true
+  
   parentJobId:
     type:ObjectId
     index:true
@@ -14,6 +21,8 @@ schema = new mongoose.Schema {
   childJobId:ObjectId
   
   name:String
+  
+  jobPath:String
   
   processor:String
   
@@ -67,6 +76,11 @@ schema = new mongoose.Schema {
 
 schema.method {
   
+  isMultiple:()->
+    @type is "parallel" or @type is "sequential"
+  
+  saveStatus:(@status, next)->
+    this.save next
 }
   
 schema.static {

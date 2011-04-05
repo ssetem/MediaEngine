@@ -1,8 +1,8 @@
 Job = require './domain/Job'
 _ = require('underscore')._
 Step = require 'step'
-Util = require 'util'
-
+#util = require '#util'
+async = require 'async'
 class JobFlowManager
   
 
@@ -10,48 +10,49 @@ class JobFlowManager
   
   processNext:(func) ->
     self = this
-    Step(
     
-      #get a job from the queue
-      ()-> self.popJob this
+    async.waterfall([
       
-      #check job and porential error
-      (err, job)->
-        if err then func err
-        if job?
-          
-          if job.type is "parallel" or job.type is "sequential"
-            Step(
-              ()-> 
-                job.status = "waiting_on_dependants"
-                job.save this
-              
-              (err)->
-                if err then func err
-                
-                sel = {parentJobId:job._id}
-                if job.type is "sequential" then sel.index = 0
-                
-                Job.collection.update(
-                  sel,
-                  { "$set": {status:"ready_for_processing"} },
-                  {upsert:false, multi:true},
-                  this
-                )
-              (err)->
-                if err then Util.log err; func err
-                Util.log "job:#{job._id} started #{job.type} child jobs"
-                func()
-            )
-
+      (next) -> self.popJob next
+      
+      (job) -> 
+        if job? 
+        
+          if job.isMultiple()            
+            processMultiple(job)          
+        
           else if job.type is "job"
-            func null, job
-          else
-            func null, null
+            func null, job        
         else
           func null, null
-    )
-  
+        
+    ])
+    
+    processMultiple = (job, isNull)->
+      if job == null
+        return
+      async.waterfall([
+         
+        (next)-> job?.saveStatus "waiting_on_dependants", next
+      
+        (next) ->
+          sel = parentJobId:job._id
+          sel.index = 0 if job.type is "sequential"
+          #console.log sel
+          Job.collection.update(
+            sel,
+            { "$set": {status:"ready_for_processing"} },
+            {upsert:false, multi:true, safe:false},
+            next
+          )          
+      
+        () ->
+          #console.log arguments
+          #util.log "job:#{job._id} started #{job.type} child jobs"
+          func(null,null)
+      ])
+    
+
   popJob: (func)->
     self = @
     filter = 
@@ -62,10 +63,10 @@ class JobFlowManager
     sort = [["priority", 1]]
     update = { "$set":{status: "processing",lastModified: Date.now} }
     Job.collection.findAndModify(filter,sort, update,(err, job)->
-      if job?._id
-        Job.findById(job._id, func)
-      else
-        func()
+          if job?._id
+            Job.findById(job._id, func)
+          else
+            func(null,null)
     )  
 
   jobErrored:(errorOptions, job, next)->
@@ -75,11 +76,11 @@ class JobFlowManager
     if !cancelRetry and job.retryCount < 3
       job.status = "retrying"
       job.retryCount++
-      Util.log "job: #{job._id} errored, attempting retry:#{job.retryCount}"
+      #util.log "job: #{job._id} errored, attempting retry:#{job.retryCount}"
       job.save next
     else
       job.status ="failed"
-      Util.log "job #{job._id} failed"
+      #util.log "job #{job._id} failed"
       job.errorMessage = job.errorMessage || ""
       job.save next
 
@@ -87,23 +88,7 @@ class JobFlowManager
 
   jobSuccessful:(job, next)->
     self = this
-    
-    if job.nextJobId?
-      Step(
-        ()->
-          job.status = "completed"
-          job.save this
-        (err)->
-          if err then Util.log err; next err
-          Job.findById(job.nextJobId, (err, nextJob)->
-            if err then Util.log err; next err
-            nextJob.status = "ready_for_processing"
-            nextJob.save next()
-          )
-      )
-    
-    if job.childJobId?
-      
+    if job.childJobId? and job.status isnt "completed"
       Step(
         #set status, save the item
         ()->
@@ -111,62 +96,71 @@ class JobFlowManager
           job.save this
           
         (err)->
-          if err then Util.log err; next err
+          if err then #util.log err; next err
           Job.findById(job.childJobId, (err, childJob) ->
-            if err then Util.log err; next err
+            if err then #util.log err; next err
             if childJob?
               childJob.status = "ready_for_processing"
               childJob.save this
             else
-              Util.log("somethign went wrong")
+              #util.log("somethign went wrong")
               next()
           )
           
         (err)->
-          Util.log "job: #{job._id} completed, waiting on child jobs"                    
+          #util.log "job: #{job._id} completed, waiting on child jobs"                    
           next(err)
           
       )
+    
+    else if job.nextJobId?
+      Step(
+        ()->
+          job.status = "completed"
+          job.save this
+        (err)->
+          if err then #util.log err; next err
+          Job.findById(job.nextJobId, (err, nextJob)->
+            if err then #util.log err; next err
+            if nextJob.status isnt "completed"
+              nextJob.status = "ready_for_processing"
+              nextJob.save next
+          )
+      )
+    
+
     else   
       job.status = "completed"
       Step(
         ()->job.save this
         (err)->
-          if err then Util.log err
+          if err then #util.log err
           if job.parentJobId?
-            #Util.log "job: #{job._id} completed, notifying parents"              
-            next()
+            ##util.log "job: #{job._id} completed, notifying parents"  
+            next()            
             self.notifyParents(job)
           else
-            Util.log "job: #{job._id} completed"              
+            #util.log "job: #{job._id} completed"              
             next()
       )
   
   notifyParents:(job)->
     self = this
-    
+
     Job.findById(job.parentJobId, (err, parentJob)->
-      if err then Util.log err
-      setStatus = ->
+      if err then #util.log err
+      setStatus =->
         parentJob.status = "completed"
-        parentJob.save( (err)->
-          if parentJob.parentJobId?
-            #Util.log "job: #{job._id} completed, since children completed, notifying grandparents"            
-            self.notifyParents(parentJob)
-          else
-            #Util.log "job: #{job._id} completed, since children completed"
-        )
-      
+        self.jobSuccessful(parentJob, (->))
       
       if(parentJob.type == "job" && parentJob.childJobId? && job._id.toString() == parentJob.childJobId.toString())
-        setStatus()
+        return setStatus()
       else if( parentJob.type =="parallel" or parentJob.type == "sequential" )
-        Job.count({parentJobId:parentJob._id}, (err, count)->
+        Job.count({parentJobId:parentJob._id, status:"completed"}, (err, count)->
           
           if parseInt(parentJob.childCount) == parseInt(count)
-            setStatus()        
-
-        )
+            return setStatus()
+        )      
     )
     
         

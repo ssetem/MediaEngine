@@ -71,6 +71,8 @@ testcases =
     extract_iptc = jobs[7]
     solr_index = jobs[8]
 
+    allJobs = [parJob,capitalise, truncate, truncate_capitalise, replace_job, seq_job, extract_exif, extract_iptc, solr_index]
+
     #test names
     test.equals(capitalise.name, "capitalise_name")
     test.equals(truncate.name, "truncate_name")
@@ -111,8 +113,9 @@ testcases =
     for o in [capitalise, truncate, truncate_capitalise, replace_job, seq_job, extract_exif, extract_iptc, solr_index]
       test.equals(o.status, "dependant")
     
+    
     #test data copy
-    for o in [parJob,capitalise, truncate, truncate_capitalise, replace_job, seq_job, extract_exif, extract_iptc, solr_index]
+    for o in allJobs
       test.ok(!o.data.subjob?)
       test.ok(!o.subjobs?)
       
@@ -122,6 +125,27 @@ testcases =
     test.equals(extract_iptc.nextJobId, solr_index._id)
     test.equals(solr_index.nextJobId, null)
     
+    #test previous job id
+    test.equals(extract_iptc.previousJobId, extract_exif._id)
+    test.equals(solr_index.previousJobId, extract_iptc._id)
+    test.equals(truncate_capitalise.previousJobId, truncate._id)
+    
+    #test job paths
+    
+    #console.log j.jobPath for j in allJobs
+    
+    test.equals(parJob.jobPath, "/")
+    
+    test.equals(capitalise.jobPath, "/capitalise_name/")
+    test.equals(truncate.jobPath, "/truncate_name/")
+    test.equals(truncate_capitalise.jobPath, "/truncate_name/capitalise/")
+    test.equals(replace_job.jobPath, "/replace_name/")
+    
+    test.equals(seq_job.jobPath, "/")    
+    test.equals(extract_exif.jobPath, "/extract_exif_name/")
+    test.equals(extract_iptc.jobPath, "/extract_iptc/")
+    test.equals(solr_index.jobPath, "/solr_index/")
+
     
     
     

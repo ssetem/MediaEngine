@@ -1,3 +1,4 @@
+filestore
 lib/*.js
 test/output
 *.js

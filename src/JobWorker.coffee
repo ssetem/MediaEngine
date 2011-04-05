@@ -6,17 +6,18 @@ JobFlowManager = require './JobFlowManager'
 MetadataImageProcessor = require './processors/MetadataImageProcessor'
 ZipProcessor = require './processors/ZipProcessor'
 VideoProcessor = require './processors/VideoProcessor'
-
+async = require 'async'
 require './domain/Job'
-
+JobContext = require "./domain/JobContext"
 
 class JobWorker extends AbstractJobManager
   
   constructor:(@options)->
     super(@options)
     #@processor = new ImageMagickProcessor()
-    @processor = new UppercaseProcessor()
+    #@processor = new UppercaseProcessor()
     #@processor = new VideoProcessor()
+    @processClass = UppercaseProcessor
     @jobFlowManager = new JobFlowManager()
     
   takeJob:(err)=>
@@ -26,20 +27,18 @@ class JobWorker extends AbstractJobManager
     @jobFlowManager.processNext (err, job) ->
       if err then console.log err
       if job?
-        return self.processor.process(
-          job,
-          
-          #when job fails
-          (errorOptions) -> 
-            self.jobFlowManager.jobErrored(errorOptions, job, self.takeJob)
-          ,      
-          #when job completes
-          ()->
-            self.jobFlowManager.jobSuccessful job, self.takeJob
-        )        
+        JobContext.create job, (err, jobContext)->
+          if err then console.log err
+          processor = new self.processorClass(jobContext)
+          processor.process(
+            job
+            (errorOptions) -> self.jobFlowManager.jobErrored(errorOptions, job, self.takeJob)
+            () ->             self.jobFlowManager.jobSuccessful job, self.takeJob
+          )
+             
       else
         #console.log "job queue empty"
-        setTimeout self.takeJob, 1000
+        setTimeout self.takeJob, 10
   
 
 

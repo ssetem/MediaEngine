@@ -21,8 +21,12 @@ schema = new mongoose.Schema {
 
 schema.method {
   
+  
   getFilePath:(foldername="original")->
-     "#{MediaItem.basePath}/#{this._id}/#{foldername}/#{this.filename}"
+     "/#{@getFolderPath()}/#{foldername}/output.txt"
+  
+  getFolderPath:->
+    "#{MediaItem.basePath}/#{this._id}"
   
 }
 

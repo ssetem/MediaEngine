@@ -1,7 +1,7 @@
 JobManager = require './lib/JobManager.js'
 fs = require 'fs'
 util = require 'util'
-{Par, Seq, SimpleJob,JobRouteManager} = require './lib/domain/JobRoute'
+{Par, Seq, SimpleJob,JobRouteManager} = require './lib/JobRouteManager'
 
 jobManager = new JobManager({
   mongoURL:"mongodb://localhost/media_engine"
