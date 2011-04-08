@@ -19,7 +19,10 @@ IMAGE_ROUTE = Par([
   })
   SimpleJob({
     processor:"Image", name:"preview", width:300#, customArgs:["-gaussian-blur", "20"]
-    subjob:SimpleJob({processor:"Image", name:"rotate", width:200, customArgs:["-rotate","180"]})
+    subjob:SimpleJob({
+      processor:"Image", name:"rotate", width:200, customArgs:["-rotate","180"]
+      subjob:SimpleJob({processor:"Image", name:"rotate_again", width:200, customArgs:["-rotate", "180"]})
+    })
   })
   SimpleJob({
     processor:"ImageMetadata", name:"metadata"
@@ -45,7 +48,7 @@ MediaItem.collection.remove ->
           jobManager.addJobRoute(IMAGE_ROUTE, mediaItem)
           next()
       #number of workers
-      10
+      20
     )
     
     empty = ()->

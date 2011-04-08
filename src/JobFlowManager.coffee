@@ -10,14 +10,14 @@ class JobFlowManager
   
     
   processNext:(func) ->    
-    self = this
     errorFunction = this.createErrorFunction func
     async.waterfall([      
-        (next)-> self.popJob next      
+        (next)-> Job.popJob next      
         (job) -> 
           if job?     
             if job.isMultiple()
-              processMultiple(job)          
+              job.startChildren (err)-> func err, null
+                                      
             else if job.type is "job"
               func null, job        
           else
@@ -26,38 +26,7 @@ class JobFlowManager
       errorFunction
     )
     
-    processMultiple = (job, isNull)->
-      if job == null then return
-      async.waterfall([         
-          (next)-> job.saveStatus "waiting_on_dependants", next      
-          (next)->
-            query = parentJobId:job._id
-            query.index = 0 if job.type is "sequential"
-            Job.collection.update(
-              query,
-              { "$set": {status:"ready_for_processing"} },
-              {upsert:false, multi:true, safe:false},
-              next
-            )                
-          () -> func null,null
-        ]
-        errorFunction
-      )
-    
-  popJob: (func)->
-    filter = 
-      "$or" : [
-        { status:"ready_for_processing" }
-        { status:"retrying" }
-      ]
-    sort = [["priority", 1]]
-    update = { "$set":{status: "processing",lastModified: Date.now} }
-    Job.collection.findAndModify filter,sort, update,(err, job)->
-      if job?._id
-        Job.findById(job._id, func)
-      else
-        func(null,null)
-    
+      
 
   jobErrored:(errorOptions, job, next)->
     
@@ -67,14 +36,14 @@ class JobFlowManager
       job.status = "retrying"
       job.retryCount++
       util.log "job: #{job._id} #{job.jobPath} errored, attempting retry:#{job.retryCount}"
-      util.log errorOptions.errorMessage || ""      
-      job.save next
     else
       job.status ="failed"
-      util.log "job #{job._id} #{job.jobPath} failed"
-      util.log errorOptions.errorMessage || ""
-      job.errorMessage = job.errorMessage || ""
-      job.save next
+      util.log "job #{job._id} #{job.jobPath} failed"    
+    
+    job.errorMessage = job.errorMessage || ""
+    util.log errorOptions.errorMessage || ""  
+    job.save next
+    
 
 
 
