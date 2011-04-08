@@ -19,6 +19,7 @@ class JobManager extends AbstractJobManager
     j
   
   addJobRoute:(route, mediaItem)->
+    console.log "Adding job route for #{mediaItem._id}"
     new JobRouteManager(route, mediaItem).saveJobs()
 
 module.exports = JobManager

@@ -1,25 +1,16 @@
-AbstractJobManager = require './AbstractJobManager'
-
-UppercaseProcessor = require './processors/UppercaseProcessor'
-ImageMagickProcessor = require './processors/ImageMagickProcessor'
-JobFlowManager = require './JobFlowManager'
-MetadataImageProcessor = require './processors/MetadataImageProcessor'
-ZipProcessor = require './processors/ZipProcessor'
-VideoProcessor = require './processors/VideoProcessor'
-async = require 'async'
-_ = require("underscore")._
-require './domain/Job'
-JobContext = require "./domain/JobContext"
-fs = require 'fs'
+AbstractJobManager  = require './AbstractJobManager'
+async               = require 'async'
+_                   = require("underscore")._
+Job                 = require './domain/Job'
+JobContext          = require "./domain/JobContext"
+fs                  = require 'fs'
+JobFlowManager      = require './JobFlowManager'
 
 class JobWorker extends AbstractJobManager
   
+  
   constructor:(@options)->
     super(@options)
-    #@processor = new ImageMagickProcessor()
-    #@processor = new UppercaseProcessor()
-    #@processor = new VideoProcessor()
-    @processClass = UppercaseProcessor
     @jobFlowManager = new JobFlowManager()
     
   takeJob:(err)=>
@@ -33,7 +24,7 @@ class JobWorker extends AbstractJobManager
           processorClass = require "./processors/new/#{job.processor}Processor"          
         catch e
           console.log e.stack
-        
+                
         missingProcessor = ()->
           return self.jobFlowManager.jobErrored({retry:false,errorMessage:"could not find processor:#{job.processor}Processor"}, job, self.takeJob)
         

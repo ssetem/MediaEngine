@@ -26,14 +26,16 @@ IMAGE_ROUTE = Par([
   })
 ])
 
+FileUtils.rmdirSyncRecursive __dirname + "/filestore"
+
 
 MediaItem.collection.remove ->
   Job.collection.remove ->
   
     MediaItem.basePath= __dirname + "/filestore"
   
-    imagefolder = __dirname + "/test/resources/images"
-    #imagefolder =  "/Users/ash/joe-test-images"
+    #imagefolder = __dirname + "/test/resources/images"
+    imagefolder =  "/Users/ash/joe-test-images"
   
   
     queue = async.queue(
