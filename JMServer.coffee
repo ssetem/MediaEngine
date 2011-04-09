@@ -18,7 +18,7 @@ IMAGE_ROUTE = Par([
     processor:"Image", name:"thumb", width:100
   })
   SimpleJob({
-    processor:"Image", name:"preview", width:700, customArgs:["-gaussian-blur", "20"]
+    processor:"Image", name:"preview", width:700, #customArgs:["-gaussian-blur", "20"]
     subjob:SimpleJob({
       processor:"Image", name:"rotate", width:700, customArgs:["-rotate","180"]
       subjob:SimpleJob({processor:"Image", name:"rotate_again", width:700, customArgs:["-rotate", "180"]})
