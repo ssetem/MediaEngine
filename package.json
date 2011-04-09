@@ -9,6 +9,7 @@
 	  "underscore":"1.1.5",
 	  "mime": "1.2.1",
 	  "ffmpeg-node": "0.0.1",
-	  "async":"0.1.8"
+	  "async":"0.1.8",
+	  "nodemon": "0.2.2"
 	}
 }

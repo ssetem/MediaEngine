@@ -8,6 +8,7 @@ jobWorker = new JobWorker({
 })
 
 
+
   
 jobWorker.takeJob()
    
