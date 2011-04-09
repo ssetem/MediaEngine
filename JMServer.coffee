@@ -18,10 +18,10 @@ IMAGE_ROUTE = Par([
     processor:"Image", name:"thumb", width:100
   })
   SimpleJob({
-    processor:"Image", name:"preview", width:300#, customArgs:["-gaussian-blur", "20"]
+    processor:"Image", name:"preview", width:700, customArgs:["-gaussian-blur", "20"]
     subjob:SimpleJob({
-      processor:"Image", name:"rotate", width:200, customArgs:["-rotate","180"]
-      subjob:SimpleJob({processor:"Image", name:"rotate_again", width:200, customArgs:["-rotate", "180"]})
+      processor:"Image", name:"rotate", width:700, customArgs:["-rotate","180"]
+      subjob:SimpleJob({processor:"Image", name:"rotate_again", width:700, customArgs:["-rotate", "180"]})
     })
   })
   SimpleJob({
@@ -39,13 +39,16 @@ MediaItem.collection.remove ->
   
     imagefolder = __dirname + "/test/resources/images"
     #imagefolder =  "/Users/ash/joe-test-images"
-  
+    #imagefolder = "/Users/ash/Pictures"
   
     queue = async.queue(
       (f, next) ->
         MediaItem.saveFile f, (err, mediaItem)->
-          if err then console.dir err.stack
-          jobManager.addJobRoute(IMAGE_ROUTE, mediaItem)
+          if err 
+            console.dir err.stack            
+          else
+            jobManager.addJobRoute(IMAGE_ROUTE, mediaItem)
+          
           next()
       #number of workers
       20
