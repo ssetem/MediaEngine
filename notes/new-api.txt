@@ -1,0 +1,36 @@
+match("video/*",   [  
+   {
+       "720p" : { bot:"Video", profile:"720p" args:"..."},
+       "normal": {bot:"Video", profile:"360p"},
+       "thumbnail" : { bot:"Image"}
+   },
+   {    
+       "zip": { includes:["720p", "normal","thumbnail"])
+   }
+])
+ 
+
+match("application/word",[ 
+
+    "pdf": { bot:"pdf" , 
+             subjobs: {
+                 "pages":{ bot:"Storyboard" }
+             }
+           }
+    "zip" : { includes:"pdf/pages", bot:"zip" }
+]) 
+ 
+ 
+ 
+match("badjob", [
+    {"video":bot:"m4v", subjob:{
+        "pdf":{bot:"pdf"}
+    }}
+    {"job1":{bot:"..."}}
+    {"job1":{bot:"..."}}
+    {"job2":{bot:"...", includes:"job1"}}
+])
+
+error 1 -> fails due to duplicate job
+error 2 -> invalid include
+error 3 -> video output cannot be pdf input

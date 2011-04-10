@@ -20,6 +20,7 @@ class JobWorker extends AbstractJobManager
     @jobFlowManager.processNext (err, job) ->
       if err then console.log err
       if job?  
+        #TODO: Add a processor cache
         try 
           processorClass = require "./processors/new/#{job.processor}Processor"          
         catch e
