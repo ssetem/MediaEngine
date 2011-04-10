@@ -15,7 +15,7 @@ class VideoProcessor extends AbstractProcessor
       
       console.log data
 
-      ffmpeg = spawn 'ffmpeg', ["-i #{file} #{data.args}git  #{currentFolderPath}output.flv" ]
+      ffmpeg = spawn 'ffmpeg', ["-i #{file} #{data.args} #{currentFolderPath}output.flv" ]
       
       console.log "-i #{file}"+ " #{data.args}"+ " #{currentFolderPath}output.flv"
       
