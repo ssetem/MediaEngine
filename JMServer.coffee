@@ -12,13 +12,13 @@ jobManager = new JobManager({
   mongoURL:"mongodb://localhost/media_engine"
 })
 
-
+###
 IMAGE_ROUTE = Par([
   SimpleJob({
     processor:"Image", name:"thumb", width:100
   })
   SimpleJob({
-    processor:"Image", name:"preview", width:700, customArgs:["-gaussian-blur", "20"]
+    processor:"Image", name:"preview", width:700 #, customArgs:["-gaussian-blur", "20"]
     subjob:SimpleJob({
       processor:"Image", name:"rotate", width:700, customArgs:["-rotate","180"]
       subjob:SimpleJob({processor:"Image", name:"rotate_again", width:700, customArgs:["-rotate", "180"]})
@@ -26,6 +26,14 @@ IMAGE_ROUTE = Par([
   })
   SimpleJob({
     processor:"ImageMetadata", name:"metadata"
+  })
+])
+
+###
+
+IMAGE_ROUTE = Par([
+  SimpleJob({
+    processor: "Video", name:"flv", args: "-b 1024k -s 352×264 -r 25 -acodec copy"
   })
 ])
 
@@ -37,7 +45,7 @@ MediaItem.collection.remove ->
   
     MediaItem.basePath= __dirname + "/filestore"
   
-    imagefolder = __dirname + "/test/resources/images"
+    imagefolder = __dirname + "/test/resources/video"
     #imagefolder =  "/Users/ash/joe-test-images"
     #imagefolder = "/Users/ash/Pictures"
   

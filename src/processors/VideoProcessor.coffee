@@ -1,6 +1,5 @@
 
 AbstractProcessor = require './AbstractProcessor'
-ffmpeg = require 'ffmpeg-node'
 
 class VideoProcessor extends AbstractProcessor
   

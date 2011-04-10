@@ -1,6 +1,5 @@
 Job   = require './domain/Job'
 _     = require('underscore')._
-Step  = require 'step'
 util  = require 'util'
 async = require 'async'
 
