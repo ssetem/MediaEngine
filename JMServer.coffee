@@ -30,12 +30,12 @@ IMAGE_ROUTE = Par([
 ])
 
 
-
 # IMAGE_ROUTE = Par([
 #   SimpleJob({
 #     processor: "Video", name:"flv", args: "-s 352x240 -b 512k -acodec copy"
 #   })
 # ])
+
 
 FileUtils.rmdirSyncRecursive __dirname + "/filestore"
 
