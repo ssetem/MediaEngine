@@ -1,0 +1,11 @@
+h1= mediaItem.filename
+
+ul.fileServices
+  - each service, name in mediaItem.generatedFiles
+    li= name
+      - if( service.paths[0].indexOf("jpg") > -1 )
+        br
+        img( src=service.paths[0])
+
+
+a(href="/mediaitems") back

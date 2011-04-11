@@ -26,7 +26,7 @@ class JobFlowManager
     )
     
       
-
+  #TODO: cascade failed down to children, next Perhaps status="parent_failed"
   jobErrored:(errorOptions, job, next)->
     
     cancelRetry = errorOptions?.retry is false

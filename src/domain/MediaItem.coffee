@@ -63,7 +63,7 @@ schema.static {
     })
     
     mediaItem.generatedFiles = {
-      original : {
+      "/original/" : {
         status:"completed"
         paths:[mediaItem.getRelativeFilePath()]
       }

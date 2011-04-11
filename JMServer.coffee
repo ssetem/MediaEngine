@@ -12,7 +12,7 @@ jobManager = new JobManager({
   mongoURL:"mongodb://localhost/media_engine"
 })
 
-###
+
 IMAGE_ROUTE = Par([
   SimpleJob({
     processor:"Image", name:"thumb", width:100
@@ -29,13 +29,13 @@ IMAGE_ROUTE = Par([
   })
 ])
 
-###
 
-IMAGE_ROUTE = Par([
-  SimpleJob({
-    processor: "Video", name:"flv", args: "-b 1024k -s 352×264 -r 25 -acodec copy"
-  })
-])
+
+# IMAGE_ROUTE = Par([
+#   SimpleJob({
+#     processor: "Video", name:"flv", args: "-s 352x240 -b 512k -acodec copy"
+#   })
+# ])
 
 FileUtils.rmdirSyncRecursive __dirname + "/filestore"
 
@@ -45,7 +45,7 @@ MediaItem.collection.remove ->
   
     MediaItem.basePath= __dirname + "/filestore"
   
-    imagefolder = __dirname + "/test/resources/video"
+    imagefolder = __dirname + "/test/resources/images"
     #imagefolder =  "/Users/ash/joe-test-images"
     #imagefolder = "/Users/ash/Pictures"
   

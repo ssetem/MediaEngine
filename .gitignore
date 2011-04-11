@@ -1,3 +1,4 @@
+test/resources/video
 *.DS_Store
 filestore
 lib/*.js

@@ -1,0 +1,6 @@
+h1= title
+
+ul
+  - each mediaItem in mediaItems
+    li 
+      a(href:"/mediaitems/"+mediaItem._id)#{mediaItem.filename}#{mediaItem.extension}
