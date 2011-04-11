@@ -33,7 +33,7 @@ IMAGE_ROUTE = Par([
 
 IMAGE_ROUTE = Par([
   SimpleJob({
-    processor: "Video", name:"flv", args: "-b 1024k -s 352×264 -r 25 -acodec copy"
+    processor: "Video", name:"flv", args: "-s 352x240 -b 512k -acodec copy"
   })
 ])
 

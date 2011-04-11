@@ -16,7 +16,7 @@ class ZipProcessor extends AbstractProcessor
       this.createOutputFolder()    
       
       #FIXME: needs to remove the absolute paths
-      compress = spawn 'zip', ['-r', "#{currentFolderPath}file-#{new Date().getTime()}", zipFiles ]
+      compress = spawn 'zip', ['-r', "#{currentFolderPath}file-#{new Date().getTime()}", zipFiles ], {cwd: currentFolderPath}
                             
       compress.on 'exit', (code) ->
         if code is 1 

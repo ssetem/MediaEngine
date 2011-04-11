@@ -9,31 +9,26 @@ class VideoProcessor extends AbstractProcessor
     if job?.data?
       data = job.data
       
+      this.createOutputFolder()    
+      
       #FIXME: handle more than one input
-      file = @jobContext.getInputFiles()[0]
+      file = @jobContext.getInputFiles()[0].replace(' ', '\ ')
       currentFolderPath = @jobContext.getCurrentFolder()
+      args = "-i #{file} #{data.args} #{currentFolderPath}output.flv".split(" ")
+                        
+      ffmpeg = spawn 'ffmpeg', args
       
-      console.log data
+      ffmpeg.stdout.on 'data', (data) -> 
+        console.log('stdout: ' + data)
 
-      ffmpeg = spawn 'ffmpeg', ["-i #{file} #{data.args} #{currentFolderPath}output.flv" ]
-      
-      console.log "-i #{file}"+ " #{data.args}"+ " #{currentFolderPath}output.flv"
-      
-      ffmpeg.stdout.on 'data', (code) ->
-         console.log code
-         
-      ffmpeg.stderr.on 'data', (code) ->
-        console.log code
-                
+      ffmpeg.stderr.on 'data', (data) ->
+        console.log('stderr: ' + data)
+
       ffmpeg.on 'exit', (code) ->
-        if code is 1 
-         errorHandler({errorMessage: "could not video it " })
-        else
-         nextHandler()
-
+        if code is 1 then errorHandler({errorMessage: "could not video it"})
+        nextHandler()
+                 
     else 
-      errorHandler({errorMessage: "could not video cit"})
-  
-  
+      errorHandler({errorMessage: "could not video it"})
   
 module.exports = VideoProcessor
